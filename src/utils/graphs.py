@@ -101,7 +101,7 @@ class GraphManager():
 
 # ------------------ GETTERS ------------------
 
-    def __getitem__(self, idx) -> t.Tuple[nx.Graph, int]:
+    def __getitem__(self, idx) -> t.Tuple[nx.Graph, int, int, int]:
         """
         The indexes are as follows:
         * indexes [0, 1, ..., 4999] are for the training graphs
@@ -109,19 +109,19 @@ class GraphManager():
         * indexes [6000, 6001, ... 7999] are for the testing graphs
 
         :param idx: The index of the graph to get
-        :returns: A tupple `(graph, label, group)`. The graph is a `nx.Graph`, 
+        :returns: A tupple `(graph, label, group, index)`. The graph is a `nx.Graph`, 
         the label is either 0, 1, or `None` for the testing graphs,
-        and `group` is `0` for train, `1` for valid, and `2` for test.
+        , `group` is `0` for train, `1` for valid, and `2` for test, and `index` is ìdx.
         """
         assert type(idx) == int, 'The indexes of graphs are integers.'
         assert idx>=0 and idx<NUM_LABELED+NUM_TEST, 'Index not foud.'
 
         if idx<NUM_TRAIN:
-            return self.train_data[idx], self.labels_data[idx], 0
+            return self.train_data[idx], self.labels_data[idx], 0, idx
         elif idx<NUM_LABELED:
-            return self.valid_data[idx - NUM_TRAIN], self.labels_data[idx], 1
+            return self.valid_data[idx - NUM_TRAIN], self.labels_data[idx], 1, idx
         else:
-            return self.test_data[idx - NUM_LABELED], None, 2
+            return self.test_data[idx - NUM_LABELED], None, 2, idx
 
     def get_train(self, idx) -> t.Tuple[nx.Graph, int]:
         """

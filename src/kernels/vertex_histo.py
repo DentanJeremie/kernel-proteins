@@ -21,7 +21,7 @@ class VertexHisto(Kernel):
         """Builds the vertex histograms."""
         logger.info('Building the vertex histograph kernel.')
         self._features = np.zeros((NUM_LABELED + NUM_TEST, NODE_TYPE_NUMBER))
-        for index, (gph, _, _) in enumerate(graph_manager.full):
+        for index, (gph, _, _, _) in enumerate(graph_manager.full):
             for node in gph.nodes:
                 self._features[
                     index,
