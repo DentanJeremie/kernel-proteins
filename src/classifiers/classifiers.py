@@ -5,10 +5,15 @@ import pandas as pd
 from src.utils.logs import logger
 from src.utils.pathtools import project
 from src.utils.graphs import graph_manager
+from src.kernels.kernels import Kernel
 
 class Classifier():
 
-    def predict(idx:int) -> int:
+    def __init__(self, kernel:Kernel, note='') -> None:
+        self.note = note
+        self.kernel = kernel
+
+    def predict(self, idx:int) -> int:
         raise NotImplementedError
 
     def evaluate(self) -> t.Tuple[float, float, float]:
@@ -31,17 +36,17 @@ class Classifier():
             if (lab, pred) == (1, 1):
                 correct_1 += 1
 
+        logger.debug(f'correct_0={correct_0}, incorrect_0={incorrect_0}, correct_1={correct_1}, incorrect_1={incorrect_1}')
         acc_0 = correct_0 / (correct_0 + incorrect_0)
         acc_1 = correct_1 / (correct_1 + incorrect_1)
         weighted_acc = (acc_0 + acc_1) / 2
 
-        logger.debug(f'correct_0={correct_0}, incorrect_0={incorrect_0}, correct_1={correct_1}, incorrect_1={incorrect_1}')
         logger.info(f'Performances: acc_0={acc_0:.1f}, acc_1={acc_1:.1f}, weighted_acc={weighted_acc:.1f}')
         return acc_0, acc_1, weighted_acc
 
-    def make_submission(self, note:str = ''):
+    def make_submission(self):
         """Makes a submission file and stores it."""
-        output_path = project.get_new_prediction_file(note = note)
+        output_path = project.get_new_prediction_file(note = f'{self.kernel.name}_{self.note}')
 
         data = {
             'Id':list(range(1, 2001)),
@@ -52,3 +57,19 @@ class Classifier():
         }
         pd.DataFrame(data).to_csv(output_path, index=False)
         logger.info(f'Created a submission file at {project.as_relative(output_path)}')
+
+
+class DummyClassifier(Classifier):
+
+    def predict(self, idx: int) -> int:
+        return 1
+
+
+def main():
+    clf = DummyClassifier()
+    clf.predict(0)
+    clf.evaluate()
+    clf.make_submission()
+
+if __name__ == '__main__':
+    main()

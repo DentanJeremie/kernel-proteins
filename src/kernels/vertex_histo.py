@@ -10,6 +10,7 @@ class VertexHisto(Kernel):
 
     def __init__(self):
         self._features = None
+        self.name = 'vertex_histo'
 
     @property
     def features(self):

@@ -24,6 +24,10 @@ class GraphManager():
         # Iteration mode
         self._iterator_start = 0
         self._iterator_stop = NUM_TRAIN + NUM_TEST
+        self._len = self._iterator_stop - self._iterator_start
+        self._iterator_start_memory = list()
+        self._iterator_stop_memory = list()
+        self._len_memory = list()
 
 # ------------------ PROPERTIES ------------------ 
 
@@ -113,7 +117,6 @@ class GraphManager():
         the label is either 0, 1, or `None` for the testing graphs,
         , `group` is `0` for train, `1` for valid, and `2` for test, and `index` is ìdx.
         """
-        assert type(idx) == int, 'The indexes of graphs are integers.'
         assert idx>=0 and idx<NUM_LABELED+NUM_TEST, 'Index not foud.'
 
         if idx<NUM_TRAIN:
@@ -146,30 +149,49 @@ class GraphManager():
     @property
     def train(self):
         """Returns an iterator over the train set"""
+        self._iterator_start_memory.append(self._iterator_start)
+        self._iterator_stop_memory.append(self._iterator_stop)
+        self._len_memory.append(self._len)
         self._iterator_start = 0
         self._iterator_stop = NUM_TRAIN
+        self._len = self._iterator_stop - self._iterator_start
         return self
 
     @property
     def valid(self):
         """Returns an iterator over the validation set"""
+        self._iterator_start_memory.append(self._iterator_start)
+        self._iterator_stop_memory.append(self._iterator_stop)
+        self._len_memory.append(self._len)
         self._iterator_start = NUM_TRAIN
         self._iterator_stop = NUM_LABELED
+        self._len = self._iterator_stop - self._iterator_start
         return self
 
     @property
     def test(self):
         """Returns an iterator over the test set"""
+        self._iterator_start_memory.append(self._iterator_start)
+        self._iterator_stop_memory.append(self._iterator_stop)
+        self._len_memory.append(self._len)
         self._iterator_start = NUM_LABELED
         self._iterator_stop = NUM_LABELED + NUM_TEST
+        self._len = self._iterator_stop - self._iterator_start
         return self
 
     @property
     def full(self):
         """Returns an iterator over the full set"""
+        self._iterator_start_memory.append(self._iterator_start)
+        self._iterator_stop_memory.append(self._iterator_stop)
+        self._len_memory.append(self._len)
         self._iterator_start = 0
         self._iterator_stop = NUM_LABELED + NUM_TEST
+        self._len = self._iterator_stop - self._iterator_start
         return self
+
+    def __len__(self):
+        return self._len
 
     def __iter__(self):
         return self
@@ -179,6 +201,9 @@ class GraphManager():
             self._iterator_start += 1
             return self[self._iterator_start - 1]
         
+        self._iterator_start = self._iterator_start_memory.pop()
+        self._iterator_stop = self._iterator_stop_memory.pop()
+        self._len = self._len_memory.pop()
         raise StopIteration
 
 
