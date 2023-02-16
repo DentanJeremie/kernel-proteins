@@ -1,11 +1,15 @@
-import typing as t
-
 import numpy as np
+from tqdm import tqdm
+
+from src.utils.logs import logger
+from src.utils.constants import *
+from src.utils.graphs import graph_manager
 
 class Kernel(object):
 
-    def __init__(self, name='') -> None:
+    def __init__(self, name='empty_kernel') -> None:
         self.name = name
+        self._distances_matrix = None
 
     @property
     def features(self) -> np.ndarray:
@@ -28,6 +32,8 @@ class Kernel(object):
         assert type(idx_1) == int, "You can only get the kernel evaluation of a tuple of 2 indexes"
         return self[idx_0]@self[idx_1]
 
+# ------------------ DISTANCES ------------------
+
     def dist(self, idx_0:int, idx_1:int) -> float:
         """Returns the distance between two graphs IDs.
 
@@ -37,3 +43,22 @@ class Kernel(object):
         assert type(idx_0) == int, "You can only get the distance of a tuple of 2 indexes"
         assert type(idx_1) == int, "You can only get the distance of a tuple of 2 indexes"
         return self(idx_0, idx_0) + self(idx_1, idx_1) - 2*self(idx_0, idx_1)
+
+    @property
+    def distances_matrix(self):
+        if self._distances_matrix is None:
+            self.build_distances_matrix()
+        return self._distances_matrix
+
+    def build_distances_matrix(self):
+        self._distances_matrix = np.infty * np.ones((NUM_LABELED + NUM_TEST, NUM_LABELED))
+        self.dist(0,0) # To build the kernel
+        logger.info(f'Computing distances valid->train for kernel {self.name}')
+        for _, _, _, idx_valid in tqdm(graph_manager.valid):
+            for _, _, _, idx_train in graph_manager.train:
+                self._distances_matrix[idx_valid, idx_train] = self.dist(idx_valid, idx_train)
+        logger.info(f'Computing distances test->labeled for kernel {self.name}')
+        for _, _, _, idx_test in tqdm(graph_manager.test):
+            for _, _, grp, idx_labeled in graph_manager.full:
+                if grp != 2:
+                    self._distances_matrix[idx_test, idx_labeled] = self.dist(idx_test, idx_labeled)

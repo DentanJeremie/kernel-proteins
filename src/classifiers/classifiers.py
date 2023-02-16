@@ -1,5 +1,6 @@
 import typing as t
 
+import numpy as np
 import pandas as pd
 
 from src.utils.logs import logger
@@ -41,7 +42,7 @@ class Classifier():
         acc_1 = correct_1 / (correct_1 + incorrect_1)
         weighted_acc = (acc_0 + acc_1) / 2
 
-        logger.info(f'Performances: acc_0={acc_0:.1f}, acc_1={acc_1:.1f}, weighted_acc={weighted_acc:.1f}')
+        logger.info(f'Performances: acc_0={acc_0:.3f}, acc_1={acc_1:.3f}, weighted_acc={weighted_acc:.3f}')
         return acc_0, acc_1, weighted_acc
 
     def make_submission(self):
@@ -61,8 +62,11 @@ class Classifier():
 
 class DummyClassifier(Classifier):
 
+    def __init__(self, kernel=Kernel, note='dummy') -> None:
+        super().__init__(kernel, note)
+
     def predict(self, idx: int) -> int:
-        return 1
+        return np.random.randint(0, 2)
 
 
 def main():

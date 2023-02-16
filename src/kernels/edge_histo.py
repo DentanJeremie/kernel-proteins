@@ -6,10 +6,10 @@ from src.utils.graphs import graph_manager
 from src.utils.logs import logger
 
 
-class VertexHisto(Kernel):
+class EdgeHisto(Kernel):
 
     def __init__(self):
-        super().__init__(name='vertex_histo')
+        super().__init__(name='edge_histo')
         self._features = None
 
     @property
@@ -19,11 +19,11 @@ class VertexHisto(Kernel):
         return self._features
 
     def build_histograms(self) -> None:
-        """Builds the vertex histograms."""
-        logger.info('Building the vertex histograph kernel.')
-        self._features = np.zeros((NUM_LABELED + NUM_TEST, NODE_TYPE_NUMBER))
+        """Builds the edge histograms."""
+        logger.info('Building the edge histograph kernel.')
+        self._features = np.zeros((NUM_LABELED + NUM_TEST, EDGE_TYPE_NUMBER))
         for index, (gph, _, _, _) in enumerate(graph_manager.full):
-            for node in gph.nodes:
+            for node in gph.edges:
                 self._features[
                     index,
                     gph.nodes[node][LAB_CLM][0]
@@ -32,7 +32,7 @@ class VertexHisto(Kernel):
 
 
 def main():
-    vh = VertexHisto()
+    vh = EdgeHisto()
     print(vh[0])
     for node in graph_manager[0][0].nodes:
         print(graph_manager[0][0].nodes[node][LAB_CLM][0])
