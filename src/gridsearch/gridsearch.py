@@ -2,11 +2,13 @@ import typing as t
 
 from src.utils.logs import logger
 from src.utils.pathtools import project
+from src.kernels.kernels import BaseKernel, EmptyKernel
 from src.kernels.histograms import EdgeHisto, VertexHisto, EdgeVertexHisto
 from src.classifiers.knn import KNN
-from src.classifiers.classifiers import Classifier, DummyClassifier
+from src.classifiers.classifiers import BaseClassifier, DummyClassifier
 
-kernels = [
+kernels: t.List[BaseKernel] = [
+    EmptyKernel(),
     EdgeHisto(),
     VertexHisto(),
     EdgeVertexHisto(),
@@ -34,7 +36,7 @@ def main():
     for kernel in kernels:
         for classifier, kwargs_list in classifiers:
             for kwargs in kwargs_list:
-                clf: Classifier = classifier(kernel=kernel, **kwargs)
+                clf: BaseClassifier = classifier(kernel=kernel, **kwargs)
                 logger.info(f'Evaluating kernel={kernel.name}, classifier={clf.name}, kwargs={kwargs}')
                 _, _, weighted_acc = clf.evaluate()
                 output_path = clf.make_submission()
@@ -46,6 +48,7 @@ def main():
                     best_kwargs = kwargs
                     best_output_path = project.as_relative(output_path)
 
+    logger.info(f'Best weighted accuracy: {best_weighted_acc:.3f}')
     logger.info(f'Best config: kernel={best_kernel}, classifier={best_classifier}, kwargs={best_kwargs}')
     logger.info(f'Best submission stored at {best_output_path}')
 

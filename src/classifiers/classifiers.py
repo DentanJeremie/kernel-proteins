@@ -7,11 +7,11 @@ import pandas as pd
 from src.utils.logs import logger
 from src.utils.pathtools import project
 from src.utils.graphs import graph_manager
-from src.kernels.kernels import Kernel
+from src.kernels.kernels import BaseKernel
 
-class Classifier():
+class BaseClassifier():
 
-    def __init__(self, kernel:Kernel, name='empty_classifier') -> None:
+    def __init__(self, kernel:BaseKernel, name='empty_classifier') -> None:
         self.name = name
         self.kernel = kernel
 
@@ -63,9 +63,9 @@ class Classifier():
         return output_path
 
 
-class DummyClassifier(Classifier):
+class DummyClassifier(BaseClassifier):
 
-    def __init__(self, kernel=Kernel, name='dummy') -> None:
+    def __init__(self, kernel:BaseKernel, name='dummy') -> None:
         super().__init__(kernel, name)
 
     def predict(self, idx: int) -> int:
@@ -73,7 +73,8 @@ class DummyClassifier(Classifier):
 
 
 def main():
-    clf = DummyClassifier()
+    from src.kernels.kernels import EmptyKernel
+    clf = DummyClassifier(EmptyKernel)
     clf.predict(0)
     clf.evaluate()
     clf.make_submission()

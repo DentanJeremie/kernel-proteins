@@ -1,14 +1,12 @@
 import pickle
 
 import numpy as np
-from tqdm import tqdm
 
 from src.utils.logs import logger
 from src.utils.constants import *
-from src.utils.graphs import graph_manager
 from src.utils.pathtools import project
 
-class Kernel(object):
+class BaseKernel(object):
 
     def __init__(self, name:str='empty_kernel', force_from_scratch:bool=False) -> None:
         self.name = name
@@ -17,7 +15,7 @@ class Kernel(object):
         self._force_from_scratch = force_from_scratch
 
     @property
-    def features(self):
+    def features(self) -> np.ndarray:
         if self._features is None:
             self.load()
         if self._features is None:
@@ -25,13 +23,17 @@ class Kernel(object):
         return self._features
 
     @property
-    def distances_matrix(self):
+    def distances_matrix(self) -> np.ndarray:
         if self._distances_matrix is None:
             self.load()
         if self._distances_matrix is None:
             _ = self.features
             self.build_distances_matrix()
         return self._distances_matrix
+
+    @property
+    def kernel_matrix(self) -> np.ndarray:
+        return self.features @ self.features.transpose()
 
     def build_features(self):
         raise NotImplementedError
@@ -53,7 +55,7 @@ class Kernel(object):
         """
         assert type(idx_0) == int, "You can only get the kernel evaluation of a tuple of 2 indexes"
         assert type(idx_1) == int, "You can only get the kernel evaluation of a tuple of 2 indexes"
-        return self[idx_0]@self[idx_1]
+        return self.kernel_matrix[idx_0, idx_1]
 
 # ------------------ DISTANCES ------------------
 
@@ -65,22 +67,14 @@ class Kernel(object):
         """
         assert type(idx_0) == int, "You can only get the distance of a tuple of 2 indexes"
         assert type(idx_1) == int, "You can only get the distance of a tuple of 2 indexes"
-        return self(idx_0, idx_0) + self(idx_1, idx_1) - 2*self(idx_0, idx_1)
+        return self.distances_matrix[idx_0, idx_1]
 
     def build_distances_matrix(self):
         # Building the distance matrix without saving it for the moment
-        _distances_matrix = np.infty * np.ones((NUM_LABELED + NUM_TEST, NUM_LABELED))
-        logger.info(f'Computing distances valid->train for kernel {self.name}')
-        for _, _, _, idx_valid in tqdm(graph_manager.valid):
-            for _, _, _, idx_train in graph_manager.train:
-                _distances_matrix[idx_valid, idx_train] = self.dist(idx_valid, idx_train)
-        logger.info(f'Computing distances test->labeled for kernel {self.name}')
-        for _, _, _, idx_test in tqdm(graph_manager.test):
-            for _, _, grp, idx_labeled in graph_manager.full:
-                if grp != 2:
-                    _distances_matrix[idx_test, idx_labeled] = self.dist(idx_test, idx_labeled)
+        diag = np.diag(self.kernel_matrix)
+        _distances_matrix = diag[:, np.newaxis] + diag - 2*self.kernel_matrix
 
-        # Now, saving the distance matrix
+        # Saving
         self._distances_matrix = _distances_matrix
         self.save()
 
@@ -121,3 +115,19 @@ class Kernel(object):
             self._features = storable['_features']
         if storable['_distances_matrix'] is not None:
             self._distances_matrix = storable['_distances_matrix']
+
+
+class EmptyKernel(BaseKernel):
+
+    def __init__(self, force_from_scratch:bool=False):
+        super().__init__(name='empty_kernel', force_from_scratch=force_from_scratch)
+
+    def build_features(self) -> None:
+        """Builds an empty kernel."""
+        logger.info('Building an empty histograph kernel.')
+        _features = np.zeros((NUM_LABELED + NUM_TEST, NODE_TYPE_NUMBER))
+        logger.info('Empty kernel built.')
+
+        # Saving
+        self._features = _features
+        self.save()

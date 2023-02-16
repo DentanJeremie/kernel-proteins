@@ -1,12 +1,12 @@
 import numpy as np
 
-from src.kernels.kernels import Kernel
+from src.kernels.kernels import BaseKernel
 from src.utils.constants import *
 from src.utils.graphs import graph_manager
 from src.utils.logs import logger
 
 
-class EdgeHisto(Kernel):
+class EdgeHisto(BaseKernel):
 
     def __init__(self, force_from_scratch:bool=False):
         super().__init__(name='edge_histo', force_from_scratch=force_from_scratch)
@@ -28,7 +28,7 @@ class EdgeHisto(Kernel):
         self.save()
 
 
-class VertexHisto(Kernel):
+class VertexHisto(BaseKernel):
 
     def __init__(self, force_from_scratch:bool=False):
         super().__init__(name='vertex_histo', force_from_scratch=force_from_scratch)
@@ -50,7 +50,7 @@ class VertexHisto(Kernel):
         self.save()
 
 
-class EdgeVertexHisto(Kernel):
+class EdgeVertexHisto(BaseKernel):
 
     def __init__(self, force_from_scratch:bool=False):
         super().__init__(name='edge_vertex_histo', force_from_scratch=force_from_scratch)
@@ -104,6 +104,18 @@ def main():
     vh = EdgeVertexHisto()
     print(vh(0,1))
     print(vh(1,0))
+
+    print('Checking distances')
+    idx_0, idx_1 = 3,9
+    print(vh(idx_0, idx_0) + vh(idx_1, idx_1) - 2*vh(idx_0, idx_1))
+    print(vh.dist(idx_0, idx_1))
+    print(vh.distances_matrix[idx_0, idx_1])
+
+    print('Checking evaluations')
+    idx_0, idx_1 = 2,11
+    print(vh(idx_0, idx_1))
+    print(vh.kernel_matrix[idx_0, idx_1])
+    print(vh[idx_0] @ vh[idx_1])
 
 
 if __name__ == '__main__':
