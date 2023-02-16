@@ -1,3 +1,4 @@
+from pathlib import Path
 import typing as t
 
 import numpy as np
@@ -10,8 +11,8 @@ from src.kernels.kernels import Kernel
 
 class Classifier():
 
-    def __init__(self, kernel:Kernel, note='') -> None:
-        self.note = note
+    def __init__(self, kernel:Kernel, name='empty_classifier') -> None:
+        self.name = name
         self.kernel = kernel
 
     def predict(self, idx:int) -> int:
@@ -45,9 +46,9 @@ class Classifier():
         logger.info(f'Performances: acc_0={acc_0:.3f}, acc_1={acc_1:.3f}, weighted_acc={weighted_acc:.3f}')
         return acc_0, acc_1, weighted_acc
 
-    def make_submission(self):
-        """Makes a submission file and stores it."""
-        output_path = project.get_new_prediction_file(note = f'{self.kernel.name}_{self.note}')
+    def make_submission(self) -> Path:
+        """Makes a submission file and stores it. Returns the storing path."""
+        output_path = project.get_new_prediction_file(note = f'{self.kernel.name}_{self.name}')
 
         data = {
             'Id':list(range(1, 2001)),
@@ -59,11 +60,13 @@ class Classifier():
         pd.DataFrame(data).to_csv(output_path, index=False)
         logger.info(f'Created a submission file at {project.as_relative(output_path)}')
 
+        return output_path
+
 
 class DummyClassifier(Classifier):
 
-    def __init__(self, kernel=Kernel, note='dummy') -> None:
-        super().__init__(kernel, note)
+    def __init__(self, kernel=Kernel, name='dummy') -> None:
+        super().__init__(kernel, name)
 
     def predict(self, idx: int) -> int:
         return np.random.randint(0, 2)

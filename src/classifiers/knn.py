@@ -12,7 +12,7 @@ class KNN(Classifier):
 
     def __init__(self, kernel:Kernel, num_neighbors:int) -> None:
         logger.info(f'Initializing a KNN classifier with num_neighbors={num_neighbors}') 
-        super().__init__(kernel, note=f'knn_{num_neighbors}')
+        super().__init__(kernel, name=f'knn_{num_neighbors}')
         self.num_neighbors = num_neighbors
 
     def predict(self, idx: int) -> int:
@@ -26,7 +26,7 @@ class KNN(Classifier):
         return 1
 
 def main():
-    from src.kernels.vertex_histo import VertexHisto
+    from src.kernels.histograms import VertexHisto
     knn = KNN(VertexHisto(),num_neighbors=5)
     knn.evaluate()
     knn.make_submission()

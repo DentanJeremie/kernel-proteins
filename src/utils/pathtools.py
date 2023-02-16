@@ -107,6 +107,15 @@ class CustomizedPath():
     @property
     def labels_data_path(self):
         return self.data / 'training_labels.pkl'
+
+# ------------------ KERNELS ------------------
+
+    @property
+    def kernels(self):
+        return self.mkdir_if_not_exists(self.output / 'kernels')
+
+    def get_kernel_file_path(self, kernel_name):
+        return self.kernels / f'kernel_{kernel_name}.pkl'
     
 # ------------------ PREDICTIONS ------------------
 
