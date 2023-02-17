@@ -11,41 +11,30 @@ class BaseKernel(object):
     def __init__(self, name:str='empty_kernel', force_from_scratch:bool=False) -> None:
         self.name = name
         self._distances_matrix = None
-        self._features = None
+        self._kernel_matrix = None
         self._force_from_scratch = force_from_scratch
 
     @property
-    def features(self) -> np.ndarray:
-        if self._features is None:
+    def kernel_matrix(self) -> np.ndarray:
+        if self._kernel_matrix is None:
             self.load()
-        if self._features is None:
-            self.build_features()
-        return self._features
+        if self._kernel_matrix is None:
+            self.build_kernel_matrix()
+        return self._kernel_matrix
 
     @property
     def distances_matrix(self) -> np.ndarray:
         if self._distances_matrix is None:
             self.load()
         if self._distances_matrix is None:
-            _ = self.features
+            _ = self.kernel_matrix
             self.build_distances_matrix()
         return self._distances_matrix
 
-    @property
-    def kernel_matrix(self) -> np.ndarray:
-        return self.features @ self.features.transpose()
-
-    def build_features(self):
+    def build_kernel_matrix(self):
         raise NotImplementedError
 
-# ------------------ GETTER, CALLER ------------------
-
-    def __getitem__(self, idx: int) -> np.ndarray:
-        """Returns a view of the feature vector of the graph with index `idx`.
-        Warning: this is view, so a modification in place affects the kernel.
-        """
-        assert type(idx) == int, "You can only get the feature vector by provinding the index (type int) of a graph!"
-        return self.features[idx,:]
+# ------------------ CALLER ------------------
 
     def __call__(self, idx_0:int, idx_1:int) -> float:
         """Returns the kernel evaluation between two graphs IDs.
@@ -87,7 +76,7 @@ class BaseKernel(object):
         """
         logger.info(f'Saving kernel {self.name} at {project.as_relative(project.get_kernel_file_path(self.name))}')
         storable = {
-            '_features':self._features,
+            '_kernel_matrix':self._kernel_matrix,
             '_distances_matrix':self._distances_matrix,
         }
         with project.get_kernel_file_path(self.name).open('wb') as f:
@@ -111,8 +100,8 @@ class BaseKernel(object):
         with project.get_kernel_file_path(self.name).open('rb') as f:
             storable = pickle.load(f)
 
-        if storable['_features'] is not None:
-            self._features = storable['_features']
+        if storable['_kernel_matrix'] is not None:
+            self._kernel_matrix = storable['_kernel_matrix']
         if storable['_distances_matrix'] is not None:
             self._distances_matrix = storable['_distances_matrix']
 
@@ -122,12 +111,12 @@ class EmptyKernel(BaseKernel):
     def __init__(self, force_from_scratch:bool=False):
         super().__init__(name='empty_kernel', force_from_scratch=force_from_scratch)
 
-    def build_features(self) -> None:
+    def build_kernel_matrix(self) -> None:
         """Builds an empty kernel."""
         logger.info('Building an empty histograph kernel.')
-        _features = np.zeros((NUM_LABELED + NUM_TEST, NODE_TYPE_NUMBER))
+        _kernel_matrix = np.zeros((NUM_LABELED + NUM_TEST, NUM_LABELED + NUM_TEST))
         logger.info('Empty kernel built.')
 
         # Saving
-        self._features = _features
+        self._kernel_matrix = _kernel_matrix
         self.save()

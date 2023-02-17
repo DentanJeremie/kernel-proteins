@@ -11,20 +11,20 @@ class EdgeHisto(BaseKernel):
     def __init__(self, force_from_scratch:bool=False):
         super().__init__(name='edge_histo', force_from_scratch=force_from_scratch)
 
-    def build_features(self) -> None:
+    def build_kernel_matrix(self) -> None:
         """Builds the edge histograms."""
         logger.info('Building the edge histograph kernel.')
-        _features = np.zeros((NUM_LABELED + NUM_TEST, EDGE_TYPE_NUMBER))
+        features = np.zeros((NUM_LABELED + NUM_TEST, EDGE_TYPE_NUMBER))
         for index, (gph, _, _, _) in enumerate(graph_manager.full):
             for edge in gph.edges:
-                _features[
+                features[
                     index,
                     gph.edges[edge][LAB_CLM][0]
                 ] += 1
         logger.info('Edge histograph kernel built.')
 
         # Saving
-        self._features = _features
+        self._kernel_matrix = features @ features.transpose()
         self.save()
 
 
@@ -33,20 +33,20 @@ class VertexHisto(BaseKernel):
     def __init__(self, force_from_scratch:bool=False):
         super().__init__(name='vertex_histo', force_from_scratch=force_from_scratch)
 
-    def build_features(self) -> None:
+    def build_kernel_matrix(self) -> None:
         """Builds the vertex histograms."""
         logger.info('Building the vertex histograph kernel.')
-        _features = np.zeros((NUM_LABELED + NUM_TEST, NODE_TYPE_NUMBER))
+        features = np.zeros((NUM_LABELED + NUM_TEST, NODE_TYPE_NUMBER))
         for index, (gph, _, _, _) in enumerate(graph_manager.full):
             for node in gph.nodes:
-                _features[
+                features[
                     index,
                     gph.nodes[node][LAB_CLM][0]
                 ] += 1
         logger.info('Vertex histograph kernel built.')
 
         # Saving
-        self._features = _features
+        self._kernel_matrix = self._kernel_matrix = features @ features.transpose()
         self.save()
 
 
@@ -55,25 +55,25 @@ class EdgeVertexHisto(BaseKernel):
     def __init__(self, force_from_scratch:bool=False):
         super().__init__(name='edge_vertex_histo', force_from_scratch=force_from_scratch)
 
-    def build_features(self) -> None:
+    def build_kernel_matrix(self) -> None:
         """Builds the edge and vertex histograms."""
         logger.info('Building the edge and vertex histograph kernel.')
-        _features = np.zeros((NUM_LABELED + NUM_TEST, EDGE_TYPE_NUMBER + NODE_TYPE_NUMBER))
+        features = np.zeros((NUM_LABELED + NUM_TEST, EDGE_TYPE_NUMBER + NODE_TYPE_NUMBER))
         for index, (gph, _, _, _) in enumerate(graph_manager.full):
             for edge in gph.edges:
-                _features[
+                features[
                     index,
                     gph.edges[edge][LAB_CLM][0]
                 ] += 1
             for node in gph.nodes:
-                _features[
+                features[
                     index,
                     gph.nodes[node][LAB_CLM][0] + EDGE_TYPE_NUMBER
                 ] += 1
         logger.info('Edge and vertex histograph kernel built.')
 
         # Saving
-        self._features = _features
+        self._kernel_matrix = self._kernel_matrix = features @ features.transpose()
         self.save()
 
 
