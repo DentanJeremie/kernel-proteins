@@ -3,7 +3,6 @@ import typing as t
 
 import networkx as nx
 import numpy as np
-from p_tqdm import p_map
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs
 from tqdm import tqdm
