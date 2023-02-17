@@ -115,8 +115,7 @@ class PyramidMatch(BaseKernel):
                             # These matches weight less than those that occur at
                             # higher levels (e.g. p+1 level)
                             count += (1.0/(2**(self.l-p-1)))*(intersec[p]-intersec[p+1])
-
-            _kernel_matrix[idx_0, idx_1] = count
+                _kernel_matrix[idx_0, idx_1] = count
         logger.info('Pyramid match kernel built.')
 
         # Saving
