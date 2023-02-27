@@ -122,4 +122,5 @@ class PyramidMatch(BaseKernel):
 
         # Saving
         self._kernel_matrix = _kernel_matrix
+        self._center_kernel_matrix()
         self.save()

@@ -51,7 +51,6 @@ class BaseKernel(object):
     def _center_kernel_matrix(self):
         """Centers the kernel matrix.
         """
-        logger.warning(f'Deprecated: we observed that centering the kernel decreases the performances.')
         N = NUM_LABELED + NUM_TEST
         centering_matrix = np.eye(N) - np.ones((N,N)) / N
         self._kernel_matrix = centering_matrix@self._kernel_matrix@centering_matrix
