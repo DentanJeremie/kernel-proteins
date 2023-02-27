@@ -1,11 +1,8 @@
 import collections
-import os
 import typing as t
 
 import networkx as nx
 import numpy as np
-from scipy.sparse import csr_matrix
-from scipy.sparse.linalg import eigs
 from tqdm import tqdm
 
 from src.kernels.kernels import BaseKernel
