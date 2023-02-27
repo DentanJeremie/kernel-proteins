@@ -9,6 +9,8 @@ from src.utils.pathtools import project
 from src.utils.graphs import graph_manager
 from src.kernels.kernels import BaseKernel
 
+ROC_VERBOSE = 100
+
 class BaseClassifier():
 
     def __init__(self, kernel:BaseKernel, name='empty_classifier') -> None:
@@ -18,33 +20,89 @@ class BaseClassifier():
     def predict(self, idx:int) -> int:
         raise NotImplementedError
 
-    def evaluate(self) -> t.Tuple[float, float, float]:
+    def evaluate(self) -> float:
         """Returns the performances according to the validation set,
         as a tuple (acc_0, acc_1, weighted_acc)."""
-        correct_0 = 0
-        incorrect_0 = 0
-        correct_1 = 0
-        incorrect_1 = 0
+        logger.info(f'Computing the AUC score of kernel {self.kernel.name} with classifier {self.name}')
+        # Sorting the labels by prediction
+        idx_to_logit_and_label = {
+            idx:(
+                self.predict(idx),
+                lab,
+            )
+            for _, lab, _, idx in graph_manager.valid
+        }
+        sorted_idx = sorted(
+            idx_to_logit_and_label,
+            key = lambda idx: (idx_to_logit_and_label[idx][0], 1-idx_to_logit_and_label[idx][1])
+        )
+        sorted_label = [
+            idx_to_logit_and_label[idx][1]
+            for idx in sorted_idx
+        ]
 
-        for _, lab, _, idx in graph_manager.valid:
-            pred = self.predict(idx)
 
-            if (lab, pred) == (0, 0):
-                correct_0 += 1
-            if (lab, pred) == (0, 1):
-                incorrect_0 += 1
-            if (lab, pred) == (1, 0):
-                incorrect_1 += 1
-            if (lab, pred) == (1, 1):
-                correct_1 += 1
+        # idx <= split_index -> predict 0 ; idx > split_index -> predict 1
+        # At the beginning, everybody is classified as 1
+        split_index = -1
+        ok_classified_0 = 0
+        misclassified_0 = np.sum([1 for _, lab, _, _ in graph_manager.valid if lab == 0])
+        ok_classified_1 = np.sum([1 for _, lab, _, _ in graph_manager.valid if lab == 1])
+        misclassified_1 = 0
 
-        logger.debug(f'correct_0={correct_0}, incorrect_0={incorrect_0}, correct_1={correct_1}, incorrect_1={incorrect_1}')
-        acc_0 = correct_0 / (correct_0 + incorrect_0)
-        acc_1 = correct_1 / (correct_1 + incorrect_1)
-        weighted_acc = (acc_0 + acc_1) / 2
+        sum_0 = ok_classified_0 + misclassified_0
+        sum_1 = ok_classified_1 + misclassified_1
+        tp_rate = ok_classified_1 / sum_1
+        fp_rate = misclassified_0 / sum_0
 
-        logger.info(f'Performances: acc_0={acc_0:.3f}, acc_1={acc_1:.3f}, weighted_acc={weighted_acc:.3f}')
-        return acc_0, acc_1, weighted_acc
+        # Building the ROC curve
+        roc_points = [(tp_rate, fp_rate)]
+        logger.debug(f'(tp, fp) = {tp_rate:.3f}, {fp_rate:.3f}')
+        for split_index, new_label in enumerate(sorted_label):
+            if new_label == 0:
+                ok_classified_0 += 1
+                misclassified_0 -= 1
+            elif new_label == 1:
+                ok_classified_1 -= 1
+                misclassified_1 += 1
+            else:
+                raise ValueError(f'Labels must be 0 or 1: {new_label}')
+            
+            assert sum_0 == ok_classified_0 + misclassified_0
+            assert sum_1 == ok_classified_1 + misclassified_1
+            
+            tp_rate = ok_classified_1 / sum_1
+            fp_rate = misclassified_0 / sum_0
+            roc_points.append((tp_rate, fp_rate))
+
+            if split_index % ROC_VERBOSE == 0:
+                logger.debug(f'(tp, fp) = {tp_rate:.3f}, {fp_rate:.3f}')
+        logger.debug(f'(tp, fp) = {tp_rate:.3f}, {fp_rate:.3f}')
+
+        # Computing the auc score (x-axis: fp_rate, y_axis: tp_rate)
+        auc_score = 0
+        last_tp_rate, last_fp_rate = roc_points[0]
+
+        for tp_rate, fp_rate in roc_points[1:]:
+            assert tp_rate <= last_tp_rate and fp_rate <= last_fp_rate, 'Non-decresing points in ROC curve!'
+
+            # Vertical moove 
+            if fp_rate == last_fp_rate:
+                assert tp_rate < last_tp_rate, 'Uncorrect vertical moove'
+                last_tp_rate, last_fp_rate = tp_rate, fp_rate
+            # Horizontal moove
+            else:
+                assert tp_rate == last_tp_rate, 'Uncorrect horizontal moove'
+                auc_score += tp_rate * (last_fp_rate - fp_rate)
+                last_tp_rate, last_fp_rate = tp_rate, fp_rate
+
+        # Final score
+        assert last_tp_rate == 0, f'Non-zero final tp_rate value: {last_tp_rate}'
+        assert last_fp_rate == 0, f'Non-zero final fp_rate_value: {last_fp_rate}'
+        logger.info(f'Final AUC score {auc_score:.3f} for clf {self.name} and kernel {self.kernel.name}')
+
+        return auc_score
+                
 
     def make_submission(self) -> Path:
         """Makes a submission file and stores it. Returns the storing path."""
@@ -69,7 +127,7 @@ class DummyClassifier(BaseClassifier):
         super().__init__(kernel, name)
 
     def predict(self, idx: int) -> int:
-        return np.random.randint(0, 2)
+        return np.random.random()
 
 
 def main():

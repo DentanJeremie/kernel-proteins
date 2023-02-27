@@ -29,7 +29,7 @@ classifiers = [
 ]
 
 def main():
-    best_weighted_acc = -1
+    best_auc = -1
     best_kernel = None
     best_classifier = None
     best_kwargs = None
@@ -40,17 +40,17 @@ def main():
             for kwargs in kwargs_list:
                 clf: BaseClassifier = classifier(kernel=kernel, **kwargs)
                 logger.info(f'Evaluating kernel={kernel.name}, classifier={clf.name}, kwargs={kwargs}')
-                _, _, weighted_acc = clf.evaluate()
+                auc_score = clf.evaluate()
                 output_path = clf.make_submission()
 
-                if weighted_acc > best_weighted_acc:
-                    best_weighted_acc = weighted_acc
+                if auc_score > best_auc:
+                    best_auc = auc_score
                     best_kernel = kernel.name
                     best_classifier = clf.name
                     best_kwargs = kwargs
                     best_output_path = project.as_relative(output_path)
 
-    logger.info(f'Best weighted accuracy: {best_weighted_acc:.3f}')
+    logger.info(f'Best auc score: {best_auc:.3f}')
     logger.info(f'Best config: kernel={best_kernel}, classifier={best_classifier}, kwargs={best_kwargs}')
     logger.info(f'Best submission stored at {best_output_path}')
 
