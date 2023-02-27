@@ -11,29 +11,30 @@ from src.classifiers.classifiers import BaseClassifier, DummyClassifier
 
 kernels: t.List[BaseKernel] = [
     PyramidMatch(),
-    EmptyKernel(),
     EdgeHisto(),
     VertexHisto(),
     EdgeVertexHisto(),
 ]
 classifiers = [
-    (DummyClassifier, [
-        {}
-    ]),
     (KNN, [
-        {'num_neighbors':1},
-        {'num_neighbors':2},
-        {'num_neighbors':3},
-        {'num_neighbors':5},
-        {'num_neighbors':7},
+        {'num_neighbors':k}
+        for k in range(3, 30)
     ]),
     (SVM, [
-        {'c':50, 'num_train':200},
-        {'c':100, 'num_train':200},
-        {'c':200, 'num_train':200},
-        {'c':50, 'num_train':500},
-        {'c':100, 'num_train':500},
-        {'c':200, 'num_train':500},
+        {'c':35, 'num_train':100},
+        {'c':40, 'num_train':100},
+        {'c':45, 'num_train':100},
+        {'c':50, 'num_train':100},
+        {'c':80, 'num_train':200},
+        {'c':83, 'num_train':200},
+        {'c':85, 'num_train':200},
+        {'c':88, 'num_train':200},
+        {'c':195, 'num_train':400},
+        {'c':200, 'num_train':400},
+        {'c':205, 'num_train':400},
+        {'c':295, 'num_train':600},
+        {'c':300, 'num_train':600},
+        {'c':305, 'num_train':600},
     ])
 
 ]

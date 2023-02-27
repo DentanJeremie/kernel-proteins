@@ -24,7 +24,19 @@ class SVM(BaseClassifier):
         logger.info(f'Initializing a SVM classifier with c={c}, num_train={num_train}') 
         super().__init__(kernel, name=f'svm_c_{c}_n_{num_train}')
         self.c = c
+
+        # Getting the train indexes
         self.num_train = num_train
+        self.index_train = list()
+        count_0 = 0
+        count_1 = 0
+        for _, lab, _, idx in graph_manager.train:
+            if lab == 0 and count_0 < self.num_train // 2:
+                self.index_train.append(idx)
+                count_0 += 1
+            if lab == 1 and count_1 < self.num_train - self.num_train // 2:
+                self.index_train.append(idx)
+                count_1 += 1
 
         # Computation constants
         self._alpha = None
@@ -50,9 +62,9 @@ class SVM(BaseClassifier):
         labels = np.array([
             lab
             for _, lab, _, _ in graph_manager.train 
-        ][:self.num_train])
+        ])[self.index_train]
         labels = 2*labels - 1 # Labels in {-1,1} instead of {0, 1}
-        train_kernel_matrix = self.kernel.kernel_matrix[:self.num_train, :self.num_train]
+        train_kernel_matrix = self.kernel.kernel_matrix[:, self.index_train][self.index_train, :]
 
         # Logging
         logger.info(f'Fitting SVM with c={self.c}, num_train={self.num_train} for kernel {self.kernel.name}')
@@ -123,7 +135,7 @@ class SVM(BaseClassifier):
 
         logger.info(f'Computing the separation function with c={self.c}, num_train={self.num_train}  of kernel {self.kernel.name}')
         # We call M the number of margin points
-        predict_kernel_matrix = self.kernel.kernel_matrix[:,:self.num_train] # Shape NUM_LABELED + NUM_TEST, self.num_train
+        predict_kernel_matrix = self.kernel.kernel_matrix[:,self.index_train] # Shape NUM_LABELED + NUM_TEST, self.num_train
         predict_kernel_matrix = predict_kernel_matrix[:,self._is_support] # Shape NUM_LABELED + NUM_TEST, M
         alpha_support = self._alpha[self._is_support] # shape M
         alpha_tilde = alpha_support * self._support_label # shape M
