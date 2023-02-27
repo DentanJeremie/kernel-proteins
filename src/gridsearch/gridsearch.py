@@ -6,6 +6,7 @@ from src.kernels.kernels import BaseKernel, EmptyKernel
 from src.kernels.histograms import EdgeHisto, VertexHisto, EdgeVertexHisto
 from src.kernels.pyramid_match import PyramidMatch
 from src.classifiers.knn import KNN
+from src.classifiers.svm import SVM
 from src.classifiers.classifiers import BaseClassifier, DummyClassifier
 
 kernels: t.List[BaseKernel] = [
@@ -25,7 +26,16 @@ classifiers = [
         {'num_neighbors':3},
         {'num_neighbors':5},
         {'num_neighbors':7},
+    ]),
+    (SVM, [
+        {'c':50, 'num_train':200},
+        {'c':100, 'num_train':200},
+        {'c':200, 'num_train':200},
+        {'c':50, 'num_train':500},
+        {'c':100, 'num_train':500},
+        {'c':200, 'num_train':500},
     ])
+
 ]
 
 def main():
