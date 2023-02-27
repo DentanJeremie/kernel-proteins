@@ -12,8 +12,14 @@ from src.classifiers.classifiers import BaseClassifier
 
 kernels: t.List[BaseKernel] = [
     ShortestPath(),
-    PyramidMatch(),
-    PyramidMatch(d=4),
+    PyramidMatch(d=6,l=4),
+    PyramidMatch(d=5,l=4),
+    PyramidMatch(d=4,l=4),
+    PyramidMatch(d=3,l=4),
+    PyramidMatch(d=6,l=3),
+    PyramidMatch(d=5,l=3),
+    PyramidMatch(d=4,l=3),
+    PyramidMatch(d=3,l=3),
     EdgeHisto(),
     VertexHisto(),
     EdgeVertexHisto(),
@@ -21,15 +27,15 @@ kernels: t.List[BaseKernel] = [
 classifiers = [
     (KNN, [
         {'num_neighbors':k}
-        for k in range(3, 40)
+        for k in range(3, 60)
     ]),
     (FixedWeightedKNN, [
         {'num_neighbors':k}
-        for k in range(3, 40)
+        for k in range(3, 60)
     ]),
     (InverseWeightedKNN, [
         {'num_neighbors':k}
-        for k in range(3, 40)
+        for k in range(3, 60)
     ]),
     (SVM, [
         {'c':35, 'num_train':100},
