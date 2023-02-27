@@ -94,10 +94,8 @@ class PyramidMatch(BaseKernel):
         # Inspired from https://github.com/ysig/GraKeL/blob/65895874/grakel/kernels/pyramid_match.py
         _kernel_matrix = np.zeros((NUM_LABELED+NUM_TEST, NUM_LABELED+NUM_TEST))
         for idx_0 in tqdm(range(NUM_LABELED+NUM_TEST)):
-            for idx_1 in range(NUM_LABELED+NUM_TEST):
-                if idx_1 > idx_0:
-                    continue
-
+            for idx_1 in range(idx_0, NUM_LABELED+NUM_TEST):
+                
                 count = 0
                 x, y = histograms_by_graph[idx_0], histograms_by_graph[idx_1]
                 if len(x) != 0 and len(y) != 0:

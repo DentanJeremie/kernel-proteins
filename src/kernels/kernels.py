@@ -46,6 +46,16 @@ class BaseKernel(object):
         assert type(idx_1) == int, "You can only get the kernel evaluation of a tuple of 2 indexes"
         return self.kernel_matrix[idx_0, idx_1]
 
+# ------------------ CENTER KERNEL MATRIX ------------------
+
+    def _center_kernel_matrix(self):
+        """Centers the kernel matrix.
+        """
+        logger.warning(f'Deprecated: we observed that centering the kernel decreases the performances.')
+        N = NUM_LABELED + NUM_TEST
+        centering_matrix = np.eye(N) - np.ones((N,N)) / N
+        self._kernel_matrix = centering_matrix@self._kernel_matrix@centering_matrix
+
 # ------------------ DISTANCES ------------------
 
     def dist(self, idx_0:int, idx_1:int) -> float:

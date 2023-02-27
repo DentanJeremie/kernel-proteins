@@ -2,17 +2,18 @@ import typing as t
 
 from src.utils.logs import logger
 from src.utils.pathtools import project
-from src.kernels.kernels import BaseKernel, EmptyKernel
+from src.kernels.kernels import BaseKernel
 from src.kernels.histograms import EdgeHisto, VertexHisto, EdgeVertexHisto
 from src.kernels.pyramid_match import PyramidMatch
 from src.kernels.shortest_path import ShortestPath
 from src.classifiers.knn import KNN
 from src.classifiers.svm import SVM
-from src.classifiers.classifiers import BaseClassifier, DummyClassifier
+from src.classifiers.classifiers import BaseClassifier
 
 kernels: t.List[BaseKernel] = [
     ShortestPath(),
     PyramidMatch(),
+    PyramidMatch(d=4),
     EdgeHisto(),
     VertexHisto(),
     EdgeVertexHisto(),

@@ -53,9 +53,7 @@ class ShortestPath(BaseKernel):
         logger.info('Building the kernel matrix')
         _kernel_matrix = np.zeros((NUM_LABELED+NUM_TEST, NUM_LABELED+NUM_TEST))
         for idx_0 in tqdm(range(NUM_LABELED+NUM_TEST)):
-            for idx_1 in range(NUM_LABELED+NUM_TEST):
-                if idx_1 > idx_0:
-                    continue
+            for idx_1 in range(idx_0, NUM_LABELED+NUM_TEST):
 
                 count = 0
                 for node_label_tuple, lengths_set in shortest_path[idx_0].items():
