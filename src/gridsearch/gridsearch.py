@@ -6,7 +6,7 @@ from src.kernels.kernels import BaseKernel
 from src.kernels.histograms import EdgeHisto, VertexHisto, EdgeVertexHisto
 from src.kernels.pyramid_match import PyramidMatch
 from src.kernels.shortest_path import ShortestPath
-from src.classifiers.knn import KNN
+from src.classifiers.knn import KNN, FixedWeightedKNN, InverseWeightedKNN
 from src.classifiers.svm import SVM
 from src.classifiers.classifiers import BaseClassifier
 
@@ -21,7 +21,15 @@ kernels: t.List[BaseKernel] = [
 classifiers = [
     (KNN, [
         {'num_neighbors':k}
-        for k in range(3, 30)
+        for k in range(3, 40)
+    ]),
+    (FixedWeightedKNN, [
+        {'num_neighbors':k}
+        for k in range(3, 40)
+    ]),
+    (InverseWeightedKNN, [
+        {'num_neighbors':k}
+        for k in range(3, 40)
     ]),
     (SVM, [
         {'c':35, 'num_train':100},
@@ -35,9 +43,6 @@ classifiers = [
         {'c':195, 'num_train':400},
         {'c':200, 'num_train':400},
         {'c':205, 'num_train':400},
-        {'c':295, 'num_train':600},
-        {'c':300, 'num_train':600},
-        {'c':305, 'num_train':600},
     ])
 
 ]
@@ -48,6 +53,12 @@ def main():
     best_classifier = None
     best_kwargs = None
     best_output_path = None
+
+    logger.info(f'Starting grid search over the kernels and the classifiers.')
+    
+    logger.info('Building or loading the kernels')
+    for kernel in kernels:
+        _ = kernel.kernel_matrix
 
     for kernel in kernels:
         for classifier, kwargs_list in classifiers:
