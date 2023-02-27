@@ -95,6 +95,9 @@ class PyramidMatch(BaseKernel):
         _kernel_matrix = np.zeros((NUM_LABELED+NUM_TEST, NUM_LABELED+NUM_TEST))
         for idx_0 in tqdm(range(NUM_LABELED+NUM_TEST)):
             for idx_1 in range(NUM_LABELED+NUM_TEST):
+                if idx_1 > idx_0:
+                    continue
+
                 count = 0
                 x, y = histograms_by_graph[idx_0], histograms_by_graph[idx_1]
                 if len(x) != 0 and len(y) != 0:
@@ -116,6 +119,7 @@ class PyramidMatch(BaseKernel):
                             # higher levels (e.g. p+1 level)
                             count += (1.0/(2**(self.l-p-1)))*(intersec[p]-intersec[p+1])
                 _kernel_matrix[idx_0, idx_1] = count
+                _kernel_matrix[idx_1, idx_0] = count
         logger.info('Pyramid match kernel built.')
 
         # Saving

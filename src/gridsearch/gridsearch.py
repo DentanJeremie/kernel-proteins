@@ -5,11 +5,13 @@ from src.utils.pathtools import project
 from src.kernels.kernels import BaseKernel, EmptyKernel
 from src.kernels.histograms import EdgeHisto, VertexHisto, EdgeVertexHisto
 from src.kernels.pyramid_match import PyramidMatch
+from src.kernels.shortest_path import ShortestPath
 from src.classifiers.knn import KNN
 from src.classifiers.svm import SVM
 from src.classifiers.classifiers import BaseClassifier, DummyClassifier
 
 kernels: t.List[BaseKernel] = [
+    ShortestPath(),
     PyramidMatch(),
     EdgeHisto(),
     VertexHisto(),
