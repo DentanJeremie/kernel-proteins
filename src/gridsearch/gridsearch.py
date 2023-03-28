@@ -1,3 +1,4 @@
+import shutil
 import typing as t
 
 from src.utils.logs import logger
@@ -50,7 +51,6 @@ classifiers = [
         {'c':200, 'num_train':400},
         {'c':205, 'num_train':400},
     ])
-
 ]
 
 def main():
@@ -79,11 +79,14 @@ def main():
                     best_kernel = kernel.name
                     best_classifier = clf.name
                     best_kwargs = kwargs
-                    best_output_path = project.as_relative(output_path)
+                    best_output_path = output_path
+
+    shutil.copyfile(best_output_path, project.best_prediction)
 
     logger.info(f'Best auc score: {best_auc:.3f}')
     logger.info(f'Best config: kernel={best_kernel}, classifier={best_classifier}, kwargs={best_kwargs}')
-    logger.info(f'Best submission stored at {best_output_path}')
-
+    logger.info(f'Best submission stored at {project.as_relative(best_output_path)}')
+    logger.info(f'Best submission copied at {project.as_relative(project.best_prediction)}')
+    
 if __name__ == '__main__':
     main()

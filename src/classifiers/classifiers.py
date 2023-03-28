@@ -3,11 +3,11 @@ import typing as t
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
 
 from src.utils.logs import logger
 from src.utils.pathtools import project
 from src.utils.graphs import graph_manager
+from src.utils.auc import roc_auc_score
 from src.kernels.kernels import BaseKernel
 
 ROC_VERBOSE = 100

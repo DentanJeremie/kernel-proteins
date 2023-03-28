@@ -99,14 +99,17 @@ class CustomizedPath():
     @property
     def train_data_path(self):
         return self.data / 'training_data.pkl'
+    # https://drive.google.com/file/d/1r83rWSleRXxMGYze4bWEUtO99zpz-IjI/view?usp=sharing
 
     @property
     def test_data_path(self):
         return self.data / 'test_data.pkl'
+    # https://drive.google.com/file/d/1taDXiRmqBRDZNyELHeW2dgFpdwbfkaY2/view?usp=sharing
 
     @property
     def labels_data_path(self):
         return self.data / 'training_labels.pkl'
+    # https://drive.google.com/file/d/1YIJbCQg4OxksMZnciz-tibn0bj9W7cN4/view?usp=sharing
 
 # ------------------ KERNELS ------------------
 
@@ -130,5 +133,9 @@ class CustomizedPath():
         :returns: A Path to the file, without creating the file.
         """
         return self.predictions / f'prediction_{datetime.datetime.now().strftime("_%Y_%m%d__%H_%M_%S")}_{note}.csv'
+    
+    @property
+    def best_prediction(self):
+        return self.root / 'test_pred.csv'
 
 project = CustomizedPath() 
