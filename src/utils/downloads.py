@@ -3,7 +3,6 @@ import sys
 
 import requests
 
-from src.utils.logs import logger
 
 DOWNLOAD_LINKS = {
     'training_data.pkl':'https://drive.google.com/uc?export=download&id=1r83rWSleRXxMGYze4bWEUtO99zpz-IjI',
@@ -22,6 +21,8 @@ def check_download(path: Path, accept_unknown = False) -> Path:
             return path
         
         # Downloading
+        from src.utils.logs import logger
+        
         logger.info(f'Downloading {path.name}')
         response = requests.get(DOWNLOAD_LINKS[path.name], stream=True)
         with path.open('wb') as f:
