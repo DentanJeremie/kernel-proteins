@@ -11,13 +11,15 @@ DOWNLOAD_LINKS = {
     'training_labels.pkl':'https://drive.google.com/uc?export=download&id=1YIJbCQg4OxksMZnciz-tibn0bj9W7cN4',
 }
 
-def check_download(path: Path):
+def check_download(path: Path, accept_unknown = False) -> Path:
     """Checks that the file is downloaded, and if not, doanloads it."""
 
     if not path.exists():
         # Checking that the name is known
         if path.name not in DOWNLOAD_LINKS:
-            raise ValueError('You asked for an unknown download!')
+            if not accept_unknown:
+                raise ValueError('You asked for an unknown download!')
+            return path
         
         # Downloading
         logger.info(f'Downloading {path.name}')
